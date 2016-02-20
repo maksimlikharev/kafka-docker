@@ -1,9 +1,10 @@
 #!/bin/bash
 
-
 if [[ -z "$START_TIMEOUT" ]]; then
     START_TIMEOUT=600
 fi
+
+echo "timeout: $START_TIMEOUT, port: $KAFKA_PORT, topics: $KAFKA_CREATE_TOPICS, zk: $KAFKA_ZOOKEEPER_CONNECT"
 
 start_timeout_exceeded=false
 count=0
@@ -30,3 +31,4 @@ if [[ -n $KAFKA_CREATE_TOPICS ]]; then
         $KAFKA_HOME/bin/kafka-topics.sh --create --zookeeper $KAFKA_ZOOKEEPER_CONNECT --replication-factor ${topicConfig[2]} --partition ${topicConfig[1]} --topic "${topicConfig[0]}"
     done
 fi
+

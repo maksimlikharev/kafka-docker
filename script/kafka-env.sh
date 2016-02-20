@@ -4,11 +4,11 @@ if [[ -z "$KAFKA_PORT" ]]; then
     export KAFKA_PORT=9092
 fi
 if [[ -z "$KAFKA_ADVERTISED_PORT" ]]; then
-    export KAFKA_ADVERTISED_PORT=$(docker port `hostname` $KAFKA_PORT | sed -r "s/.*:(.*)/\1/g")
+    export KAFKA_ADVERTISED_PORT=9092
 fi
 if [[ -z "$KAFKA_BROKER_ID" ]]; then
     # By default auto allocate broker ID
-    export KAFKA_BROKER_ID=-1
+    export KAFKA_BROKER_ID=0
 fi
 if [[ -z "$KAFKA_LOG_DIRS" ]]; then
     export KAFKA_LOG_DIRS="/kafka/kafka-logs-$HOSTNAME"
@@ -26,6 +26,9 @@ if [[ -z "$KAFKA_ADVERTISED_HOST_NAME" && -n "$HOSTNAME_COMMAND" ]]; then
     export KAFKA_ADVERTISED_HOST_NAME=$(eval $HOSTNAME_COMMAND)
 fi
 
+echo "$KAFKA_PORT" > /etc/container_environment/KAFKA_PORT
+echo "$KAFKA_ZOOKEEPER_CONNECT" > /etc/container_environment/KAFKA_ZOOKEEPER_CONNECT
+
 for VAR in `env`
 do
   if [[ $VAR =~ ^KAFKA_ && ! $VAR =~ ^KAFKA_HOME ]]; then
@@ -38,9 +41,3 @@ do
     fi
   fi
 done
-
-# Capture kill requests to stop properly
-trap "$KAFKA_HOME/bin/kafka-server-stop.sh; echo 'Kafka stopped.'; exit" SIGHUP SIGINT SIGTERM
-
-create-topics.sh & 
-$KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties
